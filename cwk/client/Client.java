@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 
 /**
  * This class is the client side of the client-server communication. It will
@@ -71,13 +72,45 @@ public class Client {
 
 	/**
 	 * The following method will send the put command to the server
-	 * to request to upload a file to the server's folder
-	 * 
+	 * The put command requires the name of the file to be uploaded to the server
+	 * @param String fileName: The name of the file to be uploaded to the server
+	 * @return void
 	 */
-	// public void requestPut(String filePath) {
-		
-	// }
-	
+
+	 public void requestPut(String fileName) {
+		File file = new File(fileName);
+		// Check if the file exists if not then print an error message
+		if(!file.exists()){
+			System.out.println("File does not exist");
+			return;
+		}
+
+		try {
+			// Create a new print writer object to send the command to the server
+			cout = new PrintWriter(clientSocket.getOutputStream(), true);
+			// Create a buffered OutputStream to send the file to the server
+			BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream());
+			// Send the list command to the server
+			cout.println("put");
+			cout.println(fileName);
+			// Send the request to the server
+			cout.flush();
+			// Read the file to be uploaded to the server
+			byte[] fileContent = Files.readAllBytes(file.toPath());
+			// Write the file to the server
+        	bos.write(fileContent);
+			// Flush the output stream
+        	bos.flush();
+			// Display the output stream
+			System.out.println("File " + fileName + " sent to server.");
+			// Close the output stream
+			bos.close();
+			cout.close();
+		} catch (IOException e) {
+			System.out.println("Error: " + e.getMessage());
+		} 
+	}
+
 
 	/**
 	 * The following method will receive the response from the server
@@ -108,14 +141,7 @@ public class Client {
 		}
 	}
 
-	/**
-	 * The following method will receive the response from the server
-	 * after sending the put command to the server
-	 * 
-	 */
-	public void receivePutResponse()
-	{
-		try {
+	public void receivePutResponse() throws IOException{
 			// Create a BufferedReader to read the response from the server
 			cin = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			// Assuming the server sends back a message indicating the action taken or data
@@ -125,37 +151,41 @@ public class Client {
 			responseLine = cin.readLine();
 			// Check if the response is not empty or null from the server
 			System.out.println(responseLine);
-
-		} catch (IOException e) {
-			System.out.println("Error receiving response from the server: " + e.getMessage());
-		}
-	
+		
 	}
+
+	/**
+	 * The following method will receive the response from the server
+	 * after sending the put command to the server
+	 * 
+	 */
 
 	public void handleListRequest() {
 		requestList();
 		receiveListResponse();
 	}
 
-	// public void handlePutRequest() {
-	// 	requestPut();
-	// 	receivePutResponse();
-	// }
 
-	public void connect(String command) {
-		// Connect to the server
-		BindToServer();
-		// Send the list command to the server
-		if (command.equals("list")) {
-			handleListRequest();
-		}
-		// }else if (command.equals("put")) {
-		// 	handlePutRequest();
-		// }
-	}
 
 	public static void main(String[] args) {
 		Client client = new Client();
-		client.connect(args[0]);
+		client.BindToServer();
+		if (args.length == 0) {
+			System.out.println("Please enter a command");
+			return;
+		}
+		String command = args[0];
+		if (command.equals("list")) {
+			client.handleListRequest();
+		} else if (command.equals("put")) {
+			if (args.length < 2) {
+				System.out.println("Please enter a file name");
+				return;
+			}
+			String fileName = args[1];
+			client.requestPut(fileName);
+		} else {
+			System.out.println("Invalid command");
+		}
 	}
 }
