@@ -23,28 +23,29 @@ public class ClientOperations {
 
     public void requestPut(String fileName) throws IOException {
         File file = new File(fileName);
-        // Check if the file exists if not then print an error message
-        if(!file.exists()){
+        if (!file.exists()) {
             System.out.println("File does not exist");
             return;
         }
-        BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream());
-        // Send the list command to the server
+    
         cout.println("put");
         cout.println(fileName);
-        // Send the request to the server
-        cout.flush();
-        // Read the file to be uploaded to the server
-        byte[] fileContent = Files.readAllBytes(file.toPath());
-        // Write the file to the server
-        bos.write(fileContent);
-        // Flush the output stream
-        bos.flush();
-         // Display the output stream
-        System.out.println("File " + fileName + " sent to server.");
-         // Close the output stream
-        bos.close();
-        cout.close();  
-    }      
+        cout.flush(); 
+    
+        // Wait for server response before sending the file
+        String response = cin.readLine();
+        if ("File already exists".equals(response)) {
+            System.out.println("File already exists on the server.");
+            return;
+        } else if ("Ready to receive file".equals(response)) {
+            try (BufferedOutputStream bos = new BufferedOutputStream(clientSocket.getOutputStream())) {
+                byte[] fileContent = Files.readAllBytes(file.toPath());
+                bos.write(fileContent);
+                bos.flush();
+                System.out.println("File " + fileName + " sent to server.");
+            } 
+        }
+    }
+    
     
 }
