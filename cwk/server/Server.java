@@ -28,6 +28,8 @@ public class Server {
                     // client
                     if (request.equals("list")) {
                         fileManager.listFiles(sout);
+                        Log logger = new Log("log.txt");
+                        logger.logging(clientSocket.getInetAddress().getHostAddress(), request);
 
                     } else if (request.equals("put")) {
                         String fileName = sin.readLine();
@@ -38,10 +40,12 @@ public class Server {
                             sout.println("Ready to receive file"); // Indicate ready to receive file content
                             fileManager.saveFile(clientSocket, fileName);
                             sout.println("File received successfully");
+                            // Log the request
+                            Log logger = new Log("log.txt");
+                            logger.logging(clientSocket.getInetAddress().getHostAddress(), request + " " + fileName);
                         }
                     }
                     // Print the request to the console
-                    System.out.println("Request: " + request);
                 } catch (Exception e) {
                     // TODO: handle exception
                     e.printStackTrace();
