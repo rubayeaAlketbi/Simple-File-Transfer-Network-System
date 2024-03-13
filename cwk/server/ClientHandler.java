@@ -18,7 +18,6 @@ public class ClientHandler extends Thread {
             String request = sin.readLine();
             // Simulate processing delay
             System.out.println("Handling request [" + request + "] from client: " + clientSocket.getInetAddress().getHostAddress());
-            Thread.sleep(5000); // Sleep for 5 seconds
 
             // Initialize the log file
             Log log = new Log("log.txt");
