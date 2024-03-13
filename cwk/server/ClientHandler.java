@@ -35,10 +35,6 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             System.out.println("Error handling client request: " + e.getMessage());
             e.printStackTrace();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            System.out.println("Thread was already interrupted: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
